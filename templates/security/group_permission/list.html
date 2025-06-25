@@ -1,0 +1,282 @@
+{% extends 'home.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% block content %}
+    {% load static %}
+    {% include 'fragments/messages.html' %}
+    <section class="dark:bg-principal mt-2">
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+            <div class="sm:pt-8 lg:pt-4">
+                <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                    {{ title1 }}
+                </h1>
+            </div>
+            <div class="lg:p-2 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                <!-- Barra de búsqueda -->
+                <div class="p-4 flex justify-center">
+                    <label for="table-search" class="sr-only">Search</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <form method="GET">
+                            <input type="text" name="q" id="table-search"
+                                class="text-center pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                                placeholder="Buscar grupos, módulos o permisos..." value="{{ request.GET.q }}">
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Tabla de permisos de grupo-módulo -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-lg">
+                        <thead class="uppercase font-Tiny5 bg-gray-50 dark:bg-secundario dark:text-blue-300">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">ID</th>
+                                <th scope="col" class="px-6 py-3">Grupo</th>
+                                <th scope="col" class="px-6 py-3">Módulo</th>
+                                <th scope="col" class="px-6 py-3">Icono</th>
+                                <th scope="col" class="px-6 py-3">URL</th>
+                                <th scope="col" class="px-6 py-3">Permisos</th>
+                                <th scope="col" class="px-6 py-3">Total Permisos</th>
+                                <th scope="col" class="px-6 py-3">Estado</th>
+                                <th scope="col" class="px-6 py-3">Fecha Creación</th>
+                                <th scope="col" class="px-6 py-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in group_permissions %}
+                            <tr class="dark:text-gray-400 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-gray-50 dark:hover:bg-[#121c33]">
+                                <td class="px-6 py-4">{{ item.id }}</td>
+                                
+                                <!-- Grupo -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center">
+                                        <div class="text-center">
+                                            <span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm font-semibold">
+                                                <i class="fa-solid fa-users mr-1">
+                                                </i>
+                                                {{ item.groups.name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Módulo -->
+                                <td class="px-6 py-4 font-semibold">
+                                    <div class="text-center">
+                                        <span class="text-gray-900 dark:text-gray-200">
+                                            {{ item.module.name }}
+                                        </span>
+                                    </div>
+                                </td>
+                                
+                                <!-- Icono del módulo -->
+                                <td class="px-6 py-4">
+                                    <i class="{{ item.module.icon }} text-2xl text-blue-600 dark:text-blue-400"></i>
+                                </td>
+                                
+                                <!-- URL del módulo -->
+                                <td class="px-6 py-4">
+                                    <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
+                                        {{ item.module.url }}
+                                    </code>
+                                </td>
+                                
+                                <!-- Lista de permisos -->
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1 justify-center max-w-xs">
+                                        {% for permission in item.permissions.all %}
+                                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
+                                            {{ permission.name|title }}
+                                        </span>
+                                        {% empty %}
+                                        <span class="text-gray-400 italic text-sm">Sin permisos</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                
+                                <!-- Total de permisos -->
+                                <td class="px-6 py-4">
+                                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
+                                        {{ item.permissions.count }}
+                                    </span>
+                                </td>
+                                
+                                <!-- Estado (basado en si el módulo está activo) -->
+                                <td class="px-6 py-4">
+                                    {% if item.module.is_active %}
+                                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-sm">
+                                            <i class="fa-solid fa-check mr-1"></i>Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-sm">
+                                            <i class="fa-solid fa-times mr-1"></i>Inactivo
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Fecha de creación -->
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-600 dark:text-gray-400 text-sm">
+                                        {% if item.created_at %}
+                                            {{ item.created_at|date:"d/m/Y" }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                
+                                <!-- Acciones -->
+                                <td class="px-6 py-4">
+                                    <div class="flex justify-center space-x-2">
+                                        
+                                        
+                                        {% if permissions.change_groupmodulepermission %}
+                                        <a href="{% url 'security:group_permission_update' item.id %}"
+                                            class="text-blue-600 dark:text-blue-500 hover:text-blue-800 mx-1"
+                                            title="Editar">
+                                            <i class="fa-solid fa-edit text-lg"></i>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if permissions.delete_groupmodulepermission %}
+                                        <a href="#"
+                                            class="text-red-600 dark:text-red-500 hover:text-red-800 mx-1"
+                                            onclick="openDeleteModal('{{ item.id }}', '{{ item.groups.name }} - {{ item.module.name }}')"
+                                            title="Eliminar">
+                                            <i class="fa-solid fa-trash text-lg"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fa-solid fa-inbox text-4xl mb-4"></i>
+                                        <p class="text-lg">No hay permisos de grupo-módulo registrados</p>
+                                        <p class="text-sm">Comienza creando el primer permiso</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="flex justify-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="inline-flex -space-x-px">
+                            {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">
+                                    <i class="fa-solid fa-angle-left mr-1"></i>Anterior
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if num == page_obj.number %}
+                            <li>
+                                <span class="flex items-center justify-center px-3 h-8 leading-tight text-blue-600 bg-blue-50 border border-gray-300 dark:bg-secundario dark:border-principal dark:text-blue-300 font-semibold">
+                                    {{ num }}
+                                </span>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">
+                                    Siguiente<i class="fa-solid fa-angle-right ml-1"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+
+                <!-- Enlaces adicionales -->
+                <div class="flex flex-col md:flex-row justify-center form-group text-center p-4 space-y-2 md:space-y-0 md:space-x-2">
+                    {% if permissions.add_groupmodulepermission %}
+                    <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'security:group_permission_create' %}">
+                        <i class="fa-solid fa-plus mr-2"></i> Nuevo Permiso Grupo-Módulo
+                    </a>
+                    {% endif %}
+                    
+                    <a class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'security:group_list' %}">
+                        <i class="fa-solid fa-users mr-2"></i> Ver Grupos
+                    </a>
+                    
+                    <a class="bg-purple-700 hover:bg-purple-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'security:module_list' %}">
+                        <i class="fa-solid fa-th-large mr-2"></i> Ver Módulos
+                    </a>
+                    
+                    <a class="bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'home' %}">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'fragments/delete.html' %}
+    
+    <script>
+    function openDeleteModal(id, description) {
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `{% url 'security:group_permission_delete' 0 %}`.replace('0', id);
+        document.getElementById('Description').textContent = `${description}`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Manejo del formulario de eliminación
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteForm = document.getElementById('deleteForm');
+        
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function(e) {
+                // Mostrar loading
+                const submitBtn = deleteForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+        
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    });
+    </script>
+{% endblock %}

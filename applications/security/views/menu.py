@@ -53,7 +53,7 @@ class MenuUpdateView(PermissionMixin, UpdateViewMixin, UpdateView):
     model = Menu
     template_name = 'security/menus/form.html'
     form_class = MenuForm
-    success_url = reverse_lazy('security:menu_list')
+    success_url = reverse_lazy('security/menu_list')
     permission_required = 'change_menu'
 
     def get_context_data(self, **kwargs):

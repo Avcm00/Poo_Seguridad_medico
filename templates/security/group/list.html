@@ -1,0 +1,378 @@
+{% extends 'home.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% block content %}
+    {% load static %}
+    {% include 'fragments/messages.html' %}
+    <section class="dark:bg-principal mt-2">
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+            <div class="sm:pt-8 lg:pt-4">
+                <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                    {{ title1 }}
+                </h1>
+            </div>
+            <div class="lg:p-2 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                <!-- Barra de búsqueda -->
+                <div class="p-4 flex justify-center">
+                    <label for="table-search" class="sr-only">Search</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <form method="GET">
+                            <input type="text" name="q" id="table-search"
+                                class="text-center pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                                placeholder="Buscar grupos..." value="{{ request.GET.q }}">
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Filtros adicionales -->
+                <div class="flex justify-center mb-4">
+                    <div class="flex space-x-2">
+                        <button onclick="filterByPermissionCount('all')" 
+                                class="px-3 py-1 text-sm rounded-full border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors {% if not request.GET.perm_filter %}bg-blue-500 text-white{% endif %}">
+                            Todos
+                        </button>
+                        <button onclick="filterByPermissionCount('with_perms')" 
+                                class="px-3 py-1 text-sm rounded-full border border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors {% if request.GET.perm_filter == 'with_perms' %}bg-green-500 text-white{% endif %}">
+                            Con Permisos
+                        </button>
+                        <button onclick="filterByPermissionCount('no_perms')" 
+                                class="px-3 py-1 text-sm rounded-full border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors {% if request.GET.perm_filter == 'no_perms' %}bg-orange-500 text-white{% endif %}">
+                            Sin Permisos
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabla de grupos -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-lg">
+                        <thead class="uppercase font-Tiny5 bg-gray-50 dark:bg-secundario dark:text-blue-300">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">ID</th>
+                                <th scope="col" class="px-6 py-3">Icono</th>
+                                <th scope="col" class="px-6 py-3">Nombre del Grupo</th>
+                                <th scope="col" class="px-6 py-3">Total Permisos</th>
+                                <th scope="col" class="px-6 py-3">Usuarios Asignados</th>
+                                <th scope="col" class="px-6 py-3">Permisos Principales</th>
+                                <th scope="col" class="px-6 py-3">Fecha Creación</th>
+                                <th scope="col" class="px-6 py-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for group in groups %}
+                            <tr class="dark:text-gray-400 bg-white border-b dark:bg-[#0b1121] dark:border-secundario hover:bg-gray-50 dark:hover:bg-[#121c33]">
+                                <td class="px-6 py-4">{{ group.id }}</td>
+                                
+                                <!-- Icono del grupo -->
+                                <td class="px-6 py-4">
+                                    {% if group.permissions.count > 0 %}
+                                        <div class="w-10 h-10 rounded-full mx-auto bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                            <i class="fa-solid fa-users text-white text-lg"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="w-10 h-10 rounded-full mx-auto bg-gray-400 flex items-center justify-center">
+                                            <i class="fa-solid fa-users text-white text-lg"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Nombre del grupo -->
+                                <td class="px-6 py-4 font-semibold">
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-lg">{{ group.name }}</span>
+                                        {% if group.name|lower == 'admin' or group.name|lower == 'administrador' %}
+                                            <span class="text-xs text-yellow-600 dark:text-yellow-400">
+                                                <i class="fa-solid fa-crown mr-1"></i>Super Grupo
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                
+                                <!-- Total de permisos -->
+                                <td class="px-6 py-4">
+                                    {% if group.permissions.count > 0 %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                            <i class="fa-solid fa-shield-halved mr-1"></i>
+                                            {{ group.permissions.count }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            <i class="fa-solid fa-ban mr-1"></i>
+                                            0
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Usuarios asignados -->
+                                <td class="px-6 py-4">
+                                    {% if group.user_set.count > 0 %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            <i class="fa-solid fa-user mr-1"></i>
+                                            {{ group.user_set.count }}
+                                        </span>
+                                        <!-- Mostrar algunos nombres de usuarios -->
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {% for user in group.user_set.all|slice:":3" %}
+                                                <span class="inline-block bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded mr-1 mb-1">
+                                                    {{ user.username }}
+                                                </span>
+                                            {% endfor %}
+                                            {% if group.user_set.count > 3 %}
+                                                <span class="text-blue-500">+{{ group.user_set.count|add:"-3" }} más</span>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
+                                            <i class="fa-solid fa-user-slash mr-1"></i>
+                                            Sin usuarios
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Permisos principales -->
+                                <td class="px-6 py-4">
+                                    <div class="max-w-xs">
+                                        {% if group.permissions.count > 0 %}
+                                            <div class="flex flex-wrap gap-1 justify-center">
+                                                {% for permission in group.permissions.all|slice:":4" %}
+                                                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded dark:bg-purple-900 dark:text-purple-300" title="{{ permission.name }}">
+                                                        {{ permission.codename|truncatechars:10 }}
+                                                    </span>
+                                                {% endfor %}
+                                                {% if group.permissions.count > 4 %}
+                                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded dark:bg-gray-700 dark:text-gray-300" title="Ver todos los permisos">
+                                                        +{{ group.permissions.count|add:"-4" }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400 text-sm">Sin permisos asignados</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                
+                                <!-- Fecha de creación (aproximada por ID) -->
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fa-solid fa-calendar mr-1"></i>
+                                        {% if group.id <= 10 %}
+                                            <span class="text-xs">Grupo del sistema</span>
+                                        {% else %}
+                                            <span class="text-xs">ID: {{ group.id }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                
+                                <!-- Acciones -->
+                                <td class="px-6 py-4">
+                                    <div class="flex justify-center space-x-2">
+                                        <!-- Ver detalles -->
+                                       
+                                        
+                                        <!-- Editar -->
+                                        {% if permissions.change_group %}
+                                        <a href="{% url 'security:group_update' group.id %}"
+                                            class="text-blue-600 dark:text-blue-500 hover:text-blue-800 mx-1"
+                                            title="Editar grupo">
+                                            <i class="fa-solid fa-edit text-lg"></i>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        <!-- Gestionar permisos -->
+                                       
+                                        
+                                        <!-- Clonar grupo -->
+                                       
+                                        
+                                        <!-- Eliminar (solo si no tiene usuarios) -->
+                                        {% if permissions.delete_group %}
+                                            {% if group.user_set.count == 0 %}
+                                            <a href="#"
+                                                class="text-red-600 dark:text-red-500 hover:text-red-800 mx-1"
+                                                onclick="openDeleteModal('{{ group.id }}', '{{ group.name }}')"
+                                                title="Eliminar grupo">
+                                                <i class="fa-solid fa-trash text-lg"></i>
+                                            </a>
+                                            {% else %}
+                                            <span class="text-gray-400 mx-1 cursor-not-allowed" 
+                                                  title="No se puede eliminar: tiene usuarios asignados">
+                                                <i class="fa-solid fa-trash text-lg"></i>
+                                            </span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fa-solid fa-users-gear text-4xl mb-2 text-gray-300"></i>
+                                        <p class="text-lg">No se encontraron grupos</p>
+                                        {% if request.GET.q %}
+                                            <p class="text-sm">Intenta con otros términos de búsqueda</p>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Estadísticas rápidas -->
+                <div class="flex justify-center mt-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-300">
+                                {{ groups|length }}
+                            </div>
+                            <div class="text-sm text-blue-800 dark:text-blue-400">Total Grupos</div>
+                        </div>
+                        <div class="bg-green-100 dark:bg-green-900 rounded-lg p-3">
+                            <div class="text-2xl font-bold text-green-600 dark:text-green-300">
+                                {{ groups_with_users }}
+                            </div>
+                            <div class="text-sm text-green-800 dark:text-green-400">Con Usuarios</div>
+                        </div>
+                        <div class="bg-purple-100 dark:bg-purple-900 rounded-lg p-3">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-300">
+                                {{ total_permissions }}
+                            </div>
+                            <div class="text-sm text-purple-800 dark:text-purple-400">Total Permisos</div>
+                        </div>
+                        <div class="bg-orange-100 dark:bg-orange-900 rounded-lg p-3">
+                            <div class="text-2xl font-bold text-orange-600 dark:text-orange-300">
+                                {{ groups_without_permissions }}
+                            </div>
+                            <div class="text-sm text-orange-800 dark:text-orange-400">Sin Permisos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginación -->
+                <div class="flex justify-center mt-4">
+                    <nav aria-label="Page navigation example">
+                        <ul class="inline-flex -space-x-px">
+                            {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.perm_filter %}&perm_filter={{ request.GET.perm_filter }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Anterior</a>
+                            </li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li>
+                                <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.perm_filter %}&perm_filter={{ request.GET.perm_filter }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight {% if num == page_obj.number %}text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700 dark:bg-secundario dark:border-principal dark:text-blue-300{% else %}text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.perm_filter %}&perm_filter={{ request.GET.perm_filter }}{% endif %}"
+                                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#0b1121] dark:border-secundario dark:text-gray-400 dark:hover:bg-[#121c33] dark:hover:text-white">Siguiente</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Enlaces adicionales -->
+                <div class="flex flex-col md:flex-row justify-center form-group text-center p-4">
+                    {% if permissions.add_group %}
+                    <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full mr-0 md:mr-2 mb-2 md:mb-0 flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'security:group_create' %}">
+                        <i class="fa-solid fa-plus mr-2"></i> Nuevo Grupo
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Gestión masiva de permisos -->
+                    {% if permissions.change_group %}
+                    <a class="bg-purple-700 hover:bg-purple-800 text-white py-2 px-4 rounded-full mr-0 md:mr-2 mb-2 md:mb-0 flex items-center justify-center transition-colors duration-300"
+                        href="#">
+                        <i class="fa-solid fa-shield-halved mr-2"></i> Gestión Masiva
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Exportar grupos -->
+                    {% if permissions.view_group %}
+                    <a class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-full mr-0 md:mr-2 mb-2 md:mb-0 flex items-center justify-center transition-colors duration-300"
+                        href="#">
+                        <i class="fa-solid fa-download mr-2"></i> Exportar
+                    </a>
+                    {% endif %}
+                    
+                    <a class="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-full flex items-center justify-center transition-colors duration-300"
+                        href="{% url 'home' %}">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'fragments/delete.html' %}
+    
+    <script>
+        function openDeleteModal(id, name) {
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'security:group_delete' 0 %}`.replace('0', id);
+            document.getElementById('Description').textContent = `Grupo: ${name}`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // Filtrar por cantidad de permisos
+        function filterByPermissionCount(filter) {
+            const currentUrl = new URL(window.location);
+            if (filter === 'all') {
+                currentUrl.searchParams.delete('perm_filter');
+            } else {
+                currentUrl.searchParams.set('perm_filter', filter);
+            }
+            currentUrl.searchParams.delete('page'); // Reset pagination
+            window.location.href = currentUrl.toString();
+        }
+
+        // Asegurar redirección correcta
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForm = document.getElementById('deleteForm');
+            
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function(e) {
+                    // Mostrar loading
+                    const submitBtn = deleteForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+
+            // Tooltips para permisos truncados
+            const permissionBadges = document.querySelectorAll('[title]');
+            permissionBadges.forEach(badge => {
+                badge.addEventListener('mouseenter', function() {
+                    // Aquí podrías implementar un tooltip personalizado
+                });
+            });
+        });
+
+        // Confirmación especial para grupos con usuarios
+        function confirmDeleteWithUsers(groupId, groupName, userCount) {
+            if (confirm(`¿Estás seguro de que quieres eliminar el grupo "${groupName}"?\n\nEste grupo tiene ${userCount} usuario(s) asignado(s). Los usuarios perderán los permisos de este grupo.`)) {
+                openDeleteModal(groupId, groupName);
+            }
+        }
+    </script>
+{% endblock %}

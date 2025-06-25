@@ -1,0 +1,566 @@
+{% extends 'home.html' %} 
+<title>{% block title %}{{title}}{% endblock %}</title>
+{% load static %}
+{% block content %}
+<section class="dark:bg-principal">
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <div class="sm:pt-28 lg:pt-4">
+             <h1 class="rounded-2xl bg-indigo-500 px-2 py-1 text-white uppercase text-4xl">
+                {{ title1 }}
+             </h1>
+        </div>
+
+        <!-- Mensajes de error del formulario (no específicos de campo) -->
+        {% if form.non_field_errors %}
+        <div class="mx-4 lg:mx-20 mb-6" data-aos="fade-up">
+            <div class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg max-w-6xl mx-auto">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-red-800 dark:text-red-200 font-medium">
+                            Se encontraron errores en el formulario:
+                        </h3>
+                        <div class="mt-2 text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6 py-4">
+            <div class="mx-4 lg:mx-20" data-aos="fade">
+                <!-- Contenedor principal del formulario -->
+                <div class="bg-white dark:bg-secundario rounded-3xl p-8 max-w-6xl mx-auto"
+                    data-aos="fade-up" data-aos-delay="200">
+                    {% csrf_token %}
+                    
+                    <!-- Header del formulario -->
+                    <div class="text-center mb-8">
+                        <div class="bg-gray-100 dark:bg-principal rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-shield-alt text-3xl text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <h2 class="dark:text-blue-300 text-2xl font-Pacifico">Asignación de Permisos por Módulo</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mt-2">Configure los permisos específicos de cada módulo para los grupos seleccionados</p>
+                    </div>
+
+                    <!-- Grid de campos -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Primera columna - Grupos -->
+                        <div class="space-y-6">
+                            <!-- Campo Groups -->
+                            <div class="field-container {% if form.groups.errors %}has-error{% endif %}">
+                                <label for="{{ form.groups.id_for_label }}"
+                                    class="font-black uppercase text-lg block mb-2
+                                           {% if form.groups.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    <i class="fa-solid fa-users mr-2"></i>{{ form.group.label }}
+                                    {% if form.group.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.group }}
+                                    {% if form.group.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.group.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.group.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="mt-1 text-gray-500 dark:text-gray-400 text-sm">
+                                    <i class="fa-solid fa-info-circle mr-1"></i>
+                                    Seleccione el grupo al que asignar permisos
+                                </div>
+                            </div>
+
+                            <!-- Vista previa del grupo seleccionado -->
+                            <div id="groupPreview" class="hidden bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                                    <i class="fa-solid fa-eye mr-2"></i>Grupo Seleccionado
+                                </h4>
+                                <div id="groupInfo" class="text-blue-700 dark:text-blue-300 text-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- Segunda columna - Módulos -->
+                        <div class="space-y-6">
+                            <!-- Campo Module -->
+                            <div class="field-container {% if form.module.errors %}has-error{% endif %}">
+                                <label for="{{ form.module.id_for_label }}"
+                                    class="font-black uppercase text-lg block mb-2
+                                           {% if form.module.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    <i class="fa-solid fa-puzzle-piece mr-2"></i>{{ form.module.label }}
+                                    {% if form.module.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ form.module }}
+                                    {% if form.module.errors %}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-exclamation-circle text-red-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if form.module.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.module.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="mt-1 text-gray-500 dark:text-gray-400 text-sm">
+                                    <i class="fa-solid fa-info-circle mr-1"></i>
+                                    Seleccione el módulo específico
+                                </div>
+                            </div>
+
+                            <!-- Vista previa del módulo seleccionado -->
+                            <div id="modulePreview" class="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">
+                                    <i class="fa-solid fa-eye mr-2"></i>Módulo Seleccionado
+                                </h4>
+                                <div id="moduleInfo" class="text-green-700 dark:text-green-300 text-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tercera columna - Permisos -->
+                        <div class="space-y-6">
+                            <!-- Campo Permissions -->
+                            <div class="field-container {% if form.permissions.errors %}has-error{% endif %}">
+                                <label for="{{ form.permissions.id_for_label }}"
+                                    class="font-black uppercase text-lg block mb-2
+                                           {% if form.permissions.errors %}text-red-600 dark:text-red-400{% else %}dark:text-blue-300{% endif %}">
+                                    <i class="fa-solid fa-key mr-2"></i>{{ form.permissions.label }}
+                                    {% if form.permissions.field.required %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                
+                                <!-- Buscador de permisos -->
+                                <div class="mb-4">
+                                    <div class="relative">
+                                        <input type="text" id="permissionSearch" 
+                                               placeholder="Buscar permisos..." 
+                                               class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <i class="fa-solid fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contenedor de permisos con scroll -->
+                                <div class="bg-gray-50 dark:bg-principal border border-gray-300 dark:border-gray-600 rounded-lg p-4 max-h-80 overflow-y-auto">
+                                    {% if form.permissions.errors %}
+                                    <div class="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-600 rounded text-red-700 dark:text-red-300 text-sm">
+                                        <i class="fa-solid fa-exclamation-triangle mr-1"></i>
+                                        Seleccione al menos un permiso
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Botones de selección rápida -->
+                                    <div class="mb-4 flex flex-wrap gap-2 pb-3 border-b border-gray-200 dark:border-gray-600">
+                                        <button type="button" id="selectAllBtn" 
+                                                class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                                            <i class="fa-solid fa-check-double mr-1"></i>Seleccionar todo
+                                        </button>
+                                        <button type="button" id="deselectAllBtn" 
+                                                class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                            <i class="fa-solid fa-times mr-1"></i>Deseleccionar todo
+                                        </button>
+                                        <button type="button" id="selectCrudBtn" 
+                                                class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-sm hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                                            <i class="fa-solid fa-cogs mr-1"></i>CRUD Básico
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Lista de permisos -->
+                                    <div id="permissionsList" class="space-y-2">
+                                        {{ form.permissions }}
+                                    </div>
+                                </div>
+                                
+                                {% if form.permissions.errors %}
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm">
+                                    {% for error in form.permissions.errors %}
+                                    <div class="flex items-center mt-1">
+                                        <i class="fa-solid fa-circle-exclamation text-xs mr-2"></i>
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Contador de permisos seleccionados -->
+                                <div class="mt-2 flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                    <span>
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        <span id="selectedCount">0</span> permisos seleccionados
+                                    </span>
+                                    <span id="permissionTypes" class="text-xs"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de configuración -->
+                    <div id="configSummary" class="hidden mt-8 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-6">
+                        <h3 class="font-semibold text-indigo-800 dark:text-indigo-200 mb-4 text-lg">
+                            <i class="fa-solid fa-clipboard-list mr-2"></i>Resumen de Configuración
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <strong class="text-indigo-700 dark:text-indigo-300">Grupo:</strong>
+                                <div id="summaryGroup" class="text-indigo-600 dark:text-indigo-400 mt-1"></div>
+                            </div>
+                            <div>
+                                <strong class="text-indigo-700 dark:text-indigo-300">Módulo:</strong>
+                                <div id="summaryModule" class="text-indigo-600 dark:text-indigo-400 mt-1"></div>
+                            </div>
+                            <div>
+                                <strong class="text-indigo-700 dark:text-indigo-300">Permisos:</strong>
+                                <div id="summaryPermissions" class="text-indigo-600 dark:text-indigo-400 mt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col md:flex-row justify-center items-center mt-8 space-y-3 md:space-y-0 md:space-x-8">
+                        <button type="submit"
+                            class="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-save mr-2"></i>Guardar Configuración
+                        </button>
+                        <a class="w-full md:w-auto bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded-lg flex items-center justify-center transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                            href="{% url 'security:group_permission_list' %}">
+                            <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CSS para estilos -->
+<style>
+/* Estilos para campos con errores */
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #ef4444 !important;
+    background-color: rgba(254, 242, 242, 0.5) !important;
+    color: #991b1b !important;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+/* Dark mode para campos con errores */
+@media (prefers-color-scheme: dark) {
+    .field-container.has-error input,
+    .field-container.has-error select,
+    .field-container.has-error textarea {
+        background-color: rgba(153, 27, 27, 0.2) !important;
+        color: #fca5a5 !important;
+        border-color: #ef4444 !important;
+    }
+    
+    .field-container.has-error input:focus,
+    .field-container.has-error select:focus,
+    .field-container.has-error textarea:focus {
+        box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.4) !important;
+    }
+}
+
+/* Estilos para checkboxes de permisos */
+.field-container input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
+.field-container.has-error input[type="checkbox"] {
+    border-color: #ef4444 !important;
+    accent-color: #ef4444 !important;
+}
+
+/* Estilos para labels de permisos */
+#id_permissions label {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    color: #374151;
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+#id_permissions label:hover {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    transform: translateX(2px);
+}
+
+@media (prefers-color-scheme: dark) {
+    #id_permissions label {
+        color: #d1d5db;
+    }
+    
+    #id_permissions label:hover {
+        background-color: #374151;
+        border-color: #4b5563;
+    }
+}
+
+#id_permissions input[type="checkbox"]:checked + label,
+#id_permissions label:has(input[type="checkbox"]:checked) {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 500;
+    border-color: #3b82f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    #id_permissions input[type="checkbox"]:checked + label,
+    #id_permissions label:has(input[type="checkbox"]:checked) {
+        background-color: #1e3a8a;
+        color: #93c5fd;
+        border-color: #3b82f6;
+    }
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.field-container.has-error {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Estilos para el scroll del contenedor de permisos */
+.max-h-80::-webkit-scrollbar {
+    width: 6px;
+}
+
+.max-h-80::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.max-h-80::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.max-h-80::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+@media (prefers-color-scheme: dark) {
+    .max-h-80::-webkit-scrollbar-track {
+        background: #1e293b;
+    }
+    
+    .max-h-80::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    
+    .max-h-80::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+}
+
+/* Estilos para selects mejorados */
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos
+    const searchInput = document.getElementById('permissionSearch');
+    const permissionsList = document.getElementById('permissionsList');
+    const selectedCount = document.getElementById('selectedCount');
+    const permissionTypes = document.getElementById('permissionTypes');
+    const groupSelect = document.getElementById('id_groups');
+    const moduleSelect = document.getElementById('id_module');
+    const configSummary = document.getElementById('configSummary');
+    const groupPreview = document.getElementById('groupPreview');
+    const modulePreview = document.getElementById('modulePreview');
+    
+    // Función para filtrar permisos
+    function filterPermissions() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const labels = permissionsList.querySelectorAll('label');
+        
+        labels.forEach(label => {
+            const text = label.textContent.toLowerCase();
+            const listItem = label.closest('li') || label;
+            
+            if (text.includes(searchTerm)) {
+                listItem.style.display = '';
+            } else {
+                listItem.style.display = 'none';
+            }
+        });
+    }
+    
+    // Función para contar permisos seleccionados y analizar tipos
+    function updateSelectedCount() {
+        const checkedBoxes = permissionsList.querySelectorAll('input[type="checkbox"]:checked');
+        selectedCount.textContent = checkedBoxes.length;
+        
+        // Analizar tipos de permisos
+        const types = {
+            create: 0,
+            read: 0,
+            update: 0,
+            delete: 0,
+            other: 0
+        };
+        
+        checkedBoxes.forEach(checkbox => {
+            const label = checkbox.nextElementSibling || checkbox.parentNode;
+            const text = label.textContent.toLowerCase();
+            
+            if (text.includes('create') || text.includes('add') || text.includes('crear')) types.create++;
+            else if (text.includes('read') || text.includes('view') || text.includes('ver') || text.includes('list')) types.read++;
+            else if (text.includes('update') || text.includes('change') || text.includes('edit') || text.includes('modificar')) types.update++;
+            else if (text.includes('delete') || text.includes('remove') || text.includes('eliminar')) types.delete++;
+            else types.other++;
+        });
+        
+        const typesSummary = [];
+        if (types.create > 0) typesSummary.push(`C:${types.create}`);
+        if (types.read > 0) typesSummary.push(`R:${types.read}`);
+        if (types.update > 0) typesSummary.push(`U:${types.update}`);
+        if (types.delete > 0) typesSummary.push(`D:${types.delete}`);
+        if (types.other > 0) typesSummary.push(`O:${types.other}`);
+        
+        permissionTypes.textContent = typesSummary.join(' | ');
+        
+        updateSummary();
+    }
+    
+    // Función para actualizar el resumen
+    function updateSummary() {
+        const groupText = groupSelect.options[groupSelect.selectedIndex]?.text || '';
+        const moduleText = moduleSelect.options[moduleSelect.selectedIndex]?.text || '';
+        const permissionsCount = document.querySelectorAll('#id_permissions input[type="checkbox"]:checked').length;
+        
+        if (groupText && moduleText && permissionsCount > 0) {
+            document.getElementById('summaryGroup').textContent = groupText;
+            document.getElementById('summaryModule').textContent = moduleText;
+            document.getElementById('summaryPermissions').textContent = `${permissionsCount} permisos seleccionados`;
+            configSummary.classList.remove('hidden');
+        } else {
+            configSummary.classList.add('hidden');
+        }
+        
+        // Mostrar/ocultar previews
+        if (groupText && groupText !== '---------') {
+            document.getElementById('groupInfo').textContent = groupText;
+            groupPreview.classList.remove('hidden');
+        } else {
+            groupPreview.classList.add('hidden');
+        }
+        
+        if (moduleText && moduleText !== '---------') {
+            document.getElementById('moduleInfo').textContent = moduleText;
+            modulePreview.classList.remove('hidden');
+        } else {
+            modulePreview.classList.add('hidden');
+        }
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', filterPermissions);
+    searchInput.addEventListener('keyup', filterPermissions);
+    
+    // Listener para checkboxes
+    permissionsList.addEventListener('change', function(e) {
+        if (e.target.type === 'checkbox') {
+            updateSelectedCount();
+        }
+    });
+    
+    // Listeners para selects
+    groupSelect.addEventListener('change', updateSummary);
+    moduleSelect.addEventListener('change', updateSummary);
+    
+    // Botones de selección
+    document.getElementById('selectAllBtn').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('#id_permissions input[type="checkbox"]');
+        const visibleCheckboxes = Array.from(checkboxes).filter(cb => {
+            const listItem = cb.closest('li') || cb.closest('label');
+            return listItem && listItem.style.display !== 'none';
+        });
+        
+        visibleCheckboxes.forEach(checkbox => checkbox.checked = true);
+        updateSelectedCount();
+    });
+    
+    document.getElementById('deselectAllBtn').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('#id_permissions input[type="checkbox"]');
+        const visibleCheckboxes = Array.from(checkboxes).filter(cb => {
+            const listItem = cb.closest('li') || cb.closest('label');
+            return listItem && listItem.style.display !== 'none';
+        });
+        
+        visibleCheckboxes.forEach(checkbox => checkbox.checked = false);
+        updateSelectedCount();
+    });
+    
+    document.getElementById('selectCrudBtn').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('#id_permissions input[type="checkbox"]');
+        const crudKeywords = ['create', 'add', 'crear', 'read', 'view', 'ver', 'list', 'update', 'change', 'edit', 'modificar', 'delete', 'remove', 'eliminar'];
+        
+        checkboxes.forEach(checkbox => {
+            const label = checkbox.nextElementSibling || checkbox.parentNode;
+            const text = label.textContent.toLowerCase();
+            const listItem = checkbox.closest('li') || checkbox.closest('label');
+            
+            if (listItem && listItem.style.display !== 'none') {
+                checkbox.checked = crudKeywords.some(keyword => text.includes(keyword));
+            }
+        });
+        updateSelectedCount();
+    });
+    
+    // Inicializar
+    updateSelectedCount();
+    updateSummary();
+});
+</script>
+
+{% endblock %}
